@@ -33,7 +33,8 @@ module PSnap
   private
 
     def get_pid
-      pid_list = `ps -ax -o pid,comm`.split("\n").select {|ps_row| ps_row =~ /#{@process_name}/}
+      regx = Regexp.new(@process_name, (@options['ignore-case']) ? Regexp::IGNORECASE : nil)
+      pid_list = `ps -ax -o pid,comm`.split("\n").select {|ps_row| regx.match(ps_row)}
       exit_now "Found #{pid_list.count} processes with names like '#{@process_name}' -- specify PID instead, or be more specific" if (pid_list.count > 1)
       return pid_list[0].split.at(0).to_i if !pid_list.empty?
       exit_now "No process matches '#{@process_name}'"
@@ -53,7 +54,7 @@ module PSnap
 
     def capture_data
       # one-liner shell command:
-      # rm cpu.txt ; while [ true ]; do  cpu=\`ps -v -p #{@pid} | sed '1d' | awk '{ print $11 }'\` ; echo $cpu ; echo $cpu >> cpu.txt ; sleep .5; done
+      # rm cpu.txt ; while [ true ]; do  cpu=\`ps -axc -o %cpu,command,pid #{@pid} | sed '1d' | awk '{ print $1 }'\` ; echo $cpu ; echo $cpu >> cpu.txt ; sleep .5; done
 
       while !@is_stop do
         ps = `ps -axc -o %cpu,command,pid #{@pid}`.split("\n")
