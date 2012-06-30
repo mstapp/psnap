@@ -23,6 +23,7 @@ class App
   ps_options = ['%cpu', 'rss']
   on("-o OPTION","--option","'ps' option to measure",ps_options,"(#{ps_options.join('|')})")
   on("--[no-]ignore-case","-i","Ignore case in process name")
+  on("--[no-]verbose","-v","Verbose output")
 
   arg :process_name, :optional
 

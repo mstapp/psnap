@@ -23,7 +23,7 @@ module PSnap
       @ignore_case = (@options['ignore-case']) ? "-i" : nil
       @pid = get_pid
       open_output_file
-      show_message
+      show_message if @options['verbose']
       capture_data # blocks until ctrl-c interrupts, then returns here
       close_output_file
     end
@@ -47,7 +47,7 @@ module PSnap
     end
 
     def show_message
-      puts "ps #{@ignore_case} process = #{@process_name}, pid = #{@pid}"
+      puts "Process = #{@process_name}, pid = #{@pid}"
     end
 
     def capture_data
