@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'rubygems'
+require 'methadone'
+require 'psnap'
+
+class App
+  include Methadone::Main
+  include Methadone::CLILogging
+
+  main do
+    process_name = options[:process_name] || ARGV.shift
+
+    exit_now! 'process name required' if process_name.nil?
+
+    PSnap::PSnapshot.new(options).snapshot(process_name.dup)
+  end
+
+  description "Take a snapshot of 'ps' measurements for a process over time"
+
+  options[:option] = '%cpu'
+  ps_options = ['%cpu', 'rss']
+  on("-o OPTION","--option","'ps' option to measure",ps_options,"(#{ps_options.join('|')})")
+  on("--[no-]ignore-case","-i","Ignore case in process name")
+
+  arg :process_name, :optional
+
+  version PSnap::VERSION
+
+  defaults_from_env_var 'PSNAP_OPTS'
+
+  go!
+end
