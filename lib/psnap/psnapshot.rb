@@ -24,7 +24,7 @@ module PSnap
       @pid = get_pid
       open_output_file
       show_message
-      capture_data
+      capture_data # blocks until ctrl-c interrupts, then returns here
       close_output_file
     end
 
@@ -51,14 +51,13 @@ module PSnap
     end
 
     def capture_data
-      # one-liner shell command:
-      # rm cpu.txt ; while [ true ]; do  cpu=\`ps -axc -o %cpu,command,pid #{@pid} | sed '1d' | awk '{ print $1 }'\` ; echo $cpu ; echo $cpu >> cpu.txt ; sleep .5; done
+      # one-liner shell command (replace 1111 with pid):
+      #     rm cpu.txt ; while [ true ]; do  cpu=`ps -axc -o %cpu,command,pid 1111 | sed '1d' | awk '{ print $1 }'` ; echo $cpu ; echo $cpu >> cpu.txt ; sleep .5; done
 
       while !@is_stop do
-        ps = `ps -axc -o %cpu,command,pid #{@pid}`.split("\n")
+        ps = `ps -axc -o %cpu #{@pid}`.split("\n")
         fatal_error "Process not found" if ps.count < 2
-        cpu = ps[1].split.at(0).to_f
-        puts cpu
+        puts ps[1].strip
         sleep 0.5
       end
     end
