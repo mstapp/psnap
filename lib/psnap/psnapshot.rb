@@ -34,12 +34,9 @@ module PSnap
 
     def get_pid
       pid_list = `ps -ax -o pid,comm`.split("\n").select {|ps_row| ps_row =~ /#{@process_name}/}
-      if (pid_list.count > 1)
-        exit_now "Found #{pid_list.count} processes with names like '#{@process_name}' -- specify PID instead, or be more specific"
-        return nil
-      end
+      exit_now "Found #{pid_list.count} processes with names like '#{@process_name}' -- specify PID instead, or be more specific" if (pid_list.count > 1)
       return pid_list[0].split.at(0).to_i if !pid_list.empty?
-      exit_now "No process match '#{@process_name}'"
+      exit_now "No process matches '#{@process_name}'"
     end
 
     def open_output_file
@@ -59,7 +56,9 @@ module PSnap
       # rm cpu.txt ; while [ true ]; do  cpu=\`ps -v -p #{@pid} | sed '1d' | awk '{ print $11 }'\` ; echo $cpu ; echo $cpu >> cpu.txt ; sleep .5; done
 
       while !@is_stop do
-        cpu = `ps -v -p #{@pid} | sed '1d' | awk '{ print $11 }'`
+        ps = `ps -axc -o %cpu,command,pid #{@pid}`.split("\n")
+        exit_now "Process not found" if ps.count < 2
+        cpu = ps[1].split.at(0).to_f
         puts cpu
         sleep 0.5
       end
