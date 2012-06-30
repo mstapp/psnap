@@ -22,12 +22,10 @@ module PSnap
       @process_name = process_name
       @ignore_case = (@options['ignore-case']) ? "-i" : nil
       @pid = get_pid
-      if (@pid)
-        open_output_file
-        show_message
-        capture_data
-        close_output_file
-      end
+      open_output_file
+      show_message
+      capture_data
+      close_output_file
     end
 
   private
@@ -35,9 +33,9 @@ module PSnap
     def get_pid
       regx = Regexp.new(@process_name, (@options['ignore-case']) ? Regexp::IGNORECASE : nil)
       pid_list = `ps -ax -o pid,comm`.split("\n").select {|ps_row| regx.match(ps_row)}
-      exit_now "Found #{pid_list.count} processes with names like '#{@process_name}' -- specify PID instead, or be more specific" if (pid_list.count > 1)
+      fatal_error "Found #{pid_list.count} processes with names like '#{@process_name}' -- specify PID instead, or be more specific" if (pid_list.count > 1)
       return pid_list[0].split.at(0).to_i if !pid_list.empty?
-      exit_now "No process matches '#{@process_name}'"
+      fatal_error "No process matches '#{@process_name}'"
     end
 
     def open_output_file
@@ -58,18 +56,18 @@ module PSnap
 
       while !@is_stop do
         ps = `ps -axc -o %cpu,command,pid #{@pid}`.split("\n")
-        exit_now "Process not found" if ps.count < 2
+        fatal_error "Process not found" if ps.count < 2
         cpu = ps[1].split.at(0).to_f
         puts cpu
         sleep 0.5
       end
     end
 
-    def exit_now(msg)
+    def fatal_error(msg)
       require 'methadone'
-
       Methadone::Main.exit_now! msg
     end
 
   end
 end
+
