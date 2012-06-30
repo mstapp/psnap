@@ -32,7 +32,7 @@ Take a snapshot of Firefox %CPU usage:
 
     # Snapshot written to a text file named after specified process name + timestamp.
     # See program output for details.
-    psnap -i firefox
+    psnap firefox
 
 ## AUTHOR
 
